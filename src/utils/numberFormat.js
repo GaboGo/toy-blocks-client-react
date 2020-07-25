@@ -1,5 +1,10 @@
 import {roundNumber} from './math';
 
+export function getCurrentNumberWithZeros(number, digits) {
+  let zeros = new Array(digits+1).join("0")
+  return (zeros + number).slice(-digits)
+}
+
 export function getCurrencyFormattedNumber(value) {
   if (value === null) {
     return '';

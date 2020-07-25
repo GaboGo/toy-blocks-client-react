@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import {
@@ -11,9 +11,23 @@ import {
 } from "@material-ui/core";
 import colors from "../constants/colors";
 import Status from "./Status";
+import { getCurrentNumberWithZeros } from "../utils/numberFormat"
 
 const Node = ({ node, expanded, toggleNodeExpanded }) => {
   const classes = useStyles();
+  const [blocks, setBlocks] = useState([])
+  
+  useEffect(() => {
+     setBlocks(node.blocks.status && node.blocks.items.length > 0 ? node.blocks.items.map(block => {
+       return (
+         <div key={block.id} className={classes.block}>
+           <span className={classes.blockId}>{getCurrentNumberWithZeros(block.attributes.index, 3)}</span>
+           <p className={classes.blockData}>{block.attributes.data}</p>
+         </div>
+       )
+     }) : node.blocks.isFetching ? <span>loading data...</span> : <span>No blocks were found</span>)
+  }, [node.blocks])
+
   return (
     <ExpansionPanel
       elevation={3}
@@ -45,8 +59,8 @@ const Node = ({ node, expanded, toggleNodeExpanded }) => {
           <Status loading={node.loading} online={node.online} />
         </Box>
       </ExpansionPanelSummary>
-      <ExpansionPanelDetails>
-        <Typography>Blocks go here</Typography>
+      <ExpansionPanelDetails className={classes.panelExpanded}>
+        <Typography className={classes.panelDetails}>{blocks}</Typography>
       </ExpansionPanelDetails>
     </ExpansionPanel>
   );
@@ -96,6 +110,33 @@ const useStyles = makeStyles((theme) => ({
     color: colors.faded,
     lineHeight: 2,
   },
+  panelDetails: {
+    width: "100%",
+  },
+  panelExpanded: {
+    padding: "0 12px 12px 12px"
+  },
+  block: {
+    color: colors.text,
+    border: "none",
+    padding: 0,
+    boxSizing: "border-box",
+    alignItems: "center",
+    borderRadius: "2px",
+    verticalAlign: "middle",
+    backgroundColor: colors.grey,
+    width: "100%",
+  },
+  blockId: {
+    color: colors.blue,
+    padding: "5px",
+    fontSize: "smaller"
+  },
+  blockData: {
+    margin: "0 5px 5px 0",
+    padding: "0 5px 5px 5px",
+    fontSize: theme.typography.pxToRem(14),
+  }
 }));
 
 Node.propTypes = {
@@ -104,6 +145,7 @@ Node.propTypes = {
     online: PropTypes.bool,
     name: PropTypes.string,
     loading: PropTypes.bool,
+    blocks: PropTypes.object,
   }).isRequired,
   expanded: PropTypes.bool,
   toggleNodeExpanded: PropTypes.func.isRequired,
